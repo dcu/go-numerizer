@@ -17,12 +17,12 @@ func Numerize(text string) (string, error) {
 
 	for key, value := range DIRECT_NUMS {
 		rx := regexp.MustCompile(`(?i)(^|\W)` + key + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+value)
+		text = rx.ReplaceAllString(text, `${1}<num>`+value+`${2}`)
 	}
 
 	for key, value := range SINGLE_NUMS {
 		rx := regexp.MustCompile(`(?i)(^|\W)` + key + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+value)
+		text = rx.ReplaceAllString(text, `${1}<num>`+value+`${2}`)
 	}
 
 	for tenPrefixName, tenPrefixStr := range TEN_PREFIXES {
@@ -34,7 +34,7 @@ func Numerize(text string) (string, error) {
 
 			num := strconv.Itoa(tenPrefixNum + singleNumNum)
 
-			text = rx.ReplaceAllString(text, `${1}<num>`+num)
+			text = rx.ReplaceAllString(text, `${1}<num>`+num+`${2}`)
 		}
 
 		for singleOrdinalName, singleOrdinalStr := range SINGLE_ORDINALS {
@@ -46,11 +46,19 @@ func Numerize(text string) (string, error) {
 			num := strconv.Itoa(tenPrefixNum + singleOrdinalNum)
 			suffix := singleOrdinalName[len(singleOrdinalName)-2:]
 
-			text = rx.ReplaceAllString(text, `${1}<num>`+num+suffix)
+			text = rx.ReplaceAllString(text, `${1}<num>`+num+suffix+`${3}`)
 		}
 
 		rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixName + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+tenPrefixStr)
+		text = rx.ReplaceAllString(text, `${1}<num>`+tenPrefixStr+`${2}`)
+	}
+
+	for fractionName, fractionValueStr := range FRACTIONS {
+		rx := regexp.MustCompile(`(?i)a ` + fractionName + `(|\W)`)
+		text = rx.ReplaceAllString(text, `<num>1/`+fractionValueStr+`${2}`)
+
+		rx = regexp.MustCompile(`(?i)\s` + fractionName + `($|\W)`)
+		text = rx.ReplaceAllString(text, `/`+fractionValueStr+`${2}`)
 	}
 
 	text = strings.Replace(text, "<num>", "", -1)
