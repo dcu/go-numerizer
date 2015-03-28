@@ -72,6 +72,20 @@ func Numerize(text string) (string, error) {
 		suffix := singleOrdinalName[len(singleOrdinalName)-2:]
 		text = rx.ReplaceAllString(text, `${1}<num>`+singleOrdinalStr+suffix+`${2}`)
 	}
+
+	// evaluate fractions when preceded by another number
+	rx := regexp.MustCompile(`(?i)(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)`)
+	matches := rx.FindStringSubmatch(text)
+	text = rx.ReplaceAllStringFunc(text, func(match string) string {
+		v1, _ := strconv.ParseFloat(matches[1], 64)
+		v3, _ := strconv.ParseFloat(matches[3], 64)
+		v4, _ := strconv.ParseFloat(matches[4], 64)
+
+		sum := v1 + (v3 / v4)
+
+		return strconv.FormatFloat(sum, 'f', 2, 64)
+	})
+
 	text = strings.Replace(text, "<num>", "", -1)
 
 	return text, err

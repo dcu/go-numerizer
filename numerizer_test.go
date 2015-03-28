@@ -75,3 +75,15 @@ func Test_SingleOrdinal(t *testing.T) {
 		t.Error("Number not parsed")
 	}
 }
+
+func Test_CleanFraction(t *testing.T) {
+	number, err := Numerize("one and two fifths")
+
+	if err != nil {
+		t.Error("Number not parsed, error: " + err.Error())
+	}
+
+	if number != "1.40" {
+		t.Error("Number not parsed")
+	}
+}
