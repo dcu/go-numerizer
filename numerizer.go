@@ -61,6 +61,17 @@ func Numerize(text string) (string, error) {
 		text = rx.ReplaceAllString(text, `/`+fractionValueStr+`${2}`)
 	}
 
+	for directOrdinalName, directOrdinalStr := range DIRECT_ORDINALS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + directOrdinalName + `($|\W)`)
+		suffix := directOrdinalName[len(directOrdinalName)-2:]
+		text = rx.ReplaceAllString(text, `${1}<num>`+directOrdinalStr+suffix+`${2}`)
+	}
+
+	for singleOrdinalName, singleOrdinalStr := range SINGLE_ORDINALS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + singleOrdinalName + `($|\W)`)
+		suffix := singleOrdinalName[len(singleOrdinalName)-2:]
+		text = rx.ReplaceAllString(text, `${1}<num>`+singleOrdinalStr+suffix+`${2}`)
+	}
 	text = strings.Replace(text, "<num>", "", -1)
 
 	return text, err
