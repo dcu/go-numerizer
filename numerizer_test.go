@@ -262,3 +262,15 @@ func Test_FractionsInWords(t *testing.T) {
 		t.Error("Number not parsed correctly.")
 	}
 }
+
+func Benchmark_Numerize(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		for text, _ := range Examples {
+			Numerize(text)
+		}
+
+		for text, _ := range Ordinals {
+			Numerize(text)
+		}
+	}
+}
