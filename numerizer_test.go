@@ -7,7 +7,7 @@ import (
 var (
 	Examples = map[string]string{
 		"one":            "1",
-		"two and a half": "2.50",
+		"two and a half": "2.5",
 		"five":           "5",
 		"ten":            "10",
 		"eleven":         "11",
@@ -45,6 +45,37 @@ var (
 		"one million two hundred fifty thousand and seven":  "1250007",
 		"one billion":                                       "1000000000",
 		"one billion and one":                               "1000000001",
+	}
+
+	Ordinals = map[string]string{
+		"first":               "1st",
+		"second":              "second",
+		"third":               "3rd",
+		"fifth":               "5th",
+		"seventh":             "7th",
+		"eighth":              "8th",
+		"tenth":               "10th",
+		"eleventh":            "11th",
+		"twelfth":             "12th",
+		"thirteenth":          "13th",
+		"sixteenth":           "16th",
+		"twentieth":           "20th",
+		"twenty-third":        "23rd",
+		"thirtieth":           "30th",
+		"thirty-first":        "31st",
+		"fourtieth":           "40th",
+		"fourty ninth":        "49th",
+		"fiftieth":            "50th",
+		"sixtieth":            "60th",
+		"seventieth":          "70th",
+		"eightieth":           "80th",
+		"ninetieth":           "90th",
+		"hundredth":           "100th",
+		"thousandth":          "1000th",
+		"millionth":           "1000000th",
+		"billionth":           "1000000000th",
+		"trillionth":          "1000000000000th",
+		"first day month two": "1st day month 2",
 	}
 )
 
@@ -120,7 +151,7 @@ func Test_SingleOrdinal(t *testing.T) {
 func Test_CleanFraction(t *testing.T) {
 	number := Numerize("one and two fifths")
 
-	if number != "1.40" {
+	if number != "1.4" {
 		t.Error("Number not parsed")
 	}
 }
@@ -133,12 +164,101 @@ func Test_BigPrefix(t *testing.T) {
 	}
 }
 
-func Test_All(t *testing.T) {
+func Test_Numbers(t *testing.T) {
 	for text, numberStr := range Examples {
 		result := Numerize(text)
 
 		if result != numberStr {
 			t.Errorf("Failed test. %s:  %s != %s", text, numberStr, result)
 		}
+	}
+}
+
+func Test_Ordinals(t *testing.T) {
+	for text, numberStr := range Ordinals {
+		result := Numerize(text)
+
+		if result != numberStr {
+			t.Errorf("Failed test. %s:  %s != %s", text, numberStr, result)
+		}
+	}
+}
+
+func Test_Compatability(t *testing.T) {
+	if "1/2" != Numerize("1/2") {
+		t.Error("Number not parsed correctly.")
+	}
+
+	if "05/06" != Numerize("05/06") {
+		t.Error("Number not parsed correctly.")
+	}
+
+	if "3.5 hours" != Numerize("three and a half hours") {
+		println(Numerize("three and a half hours"))
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_MultipleSlashesShouldNotBeEvaluated(t *testing.T) {
+	if "11/02/2007" != Numerize("11/02/2007") {
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_Edges(t *testing.T) {
+	if "27 Oct 2006 7:30am" != Numerize("27 Oct 2006 7:30am") {
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_WordWithANumber(t *testing.T) {
+	if "pennyweight" != Numerize("pennyweight") {
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_FractionalAddition(t *testing.T) {
+	if "1.25" != Numerize("one and a quarter") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "2.375" != Numerize("two and three eighths") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "3.5 hours" != Numerize("three and a half hours") {
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_CombinedDoubleDigets(t *testing.T) {
+	if "21" != Numerize("twentyone") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "37" != Numerize("thirtyseven") {
+		t.Error("Number not parsed correctly.")
+	}
+}
+
+func Test_FractionsInWords(t *testing.T) {
+	if "1/4" != Numerize("1 quarter") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "1/4" != Numerize("one quarter") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "1/4" != Numerize("a quarter") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "1/8" != Numerize("one eighth") {
+		t.Error("Number not parsed correctly.")
+	}
+
+	if "3/4" != Numerize("three quarters") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "2/4" != Numerize("two fourths") {
+		t.Error("Number not parsed correctly.")
+	}
+	if "3/8" != Numerize("three eighths") {
+		t.Error("Number not parsed correctly.")
 	}
 }

@@ -41,7 +41,7 @@ func evaluateFractions(text string) string {
 
 		sum := v1 + (v3 / v4)
 
-		replacement := strconv.FormatFloat(sum, 'f', 2, 64)
+		replacement := strconv.FormatFloat(sum, 'f', -1, 64)
 
 		text = rx.ReplaceAllString(text, replacement)
 	}
