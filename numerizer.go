@@ -8,7 +8,7 @@ import (
 
 var (
 	HyphenatedWordsRx = regexp.MustCompile(` +|([^\d])-([^\d])`)
-	AndRx             = regexp.MustCompile(`(?i)<num>(\d+)( | and )<num>(\d+)([^\w]|$)`)
+	AnditionRx        = regexp.MustCompile(`(?i)<num>(\d+)( | and )<num>(\d+)([^\w]|$)`)
 )
 
 func Numerize(text string) (string, error) {
@@ -27,7 +27,7 @@ func Numerize(text string) (string, error) {
 
 	for tenPrefixName, tenPrefixStr := range TEN_PREFIXES {
 		for singleNumName, singleNumStr := range SINGLE_NUMS {
-			rx := regexp.MustCompile(`(?i)(^|\W)` + singleNumName + `($|\W)`)
+			rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixName + singleNumName + `($|\W)`)
 
 			tenPrefixNum, _ := strconv.Atoi(tenPrefixStr)
 			singleNumNum, _ := strconv.Atoi(singleNumStr)
@@ -76,21 +76,83 @@ func Numerize(text string) (string, error) {
 	// evaluate fractions when preceded by another number
 	rx := regexp.MustCompile(`(?i)(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)`)
 	matches := rx.FindStringSubmatch(text)
-	text = rx.ReplaceAllStringFunc(text, func(match string) string {
+	if len(matches) == 5 {
 		v1, _ := strconv.ParseFloat(matches[1], 64)
 		v3, _ := strconv.ParseFloat(matches[3], 64)
 		v4, _ := strconv.ParseFloat(matches[4], 64)
 
 		sum := v1 + (v3 / v4)
 
-		return strconv.FormatFloat(sum, 'f', 2, 64)
-	})
+		replacement := strconv.FormatFloat(sum, 'f', 2, 64)
 
-	text = strings.Replace(text, "<num>", "", -1)
+		text = rx.ReplaceAllString(text, replacement)
+	}
+
+	// hundreds, thousands, millions, etc.
+	for _, pair := range BIG_PREFIXES {
+		bigPrefixName := pair[0]
+		bigPrefixValueStr := pair[1]
+		rx := regexp.MustCompile(`(?i)(?:<num>)?(\d*) *` + bigPrefixName)
+		matches := rx.FindStringSubmatch(text)
+
+		if len(matches) == 2 {
+			bigPrefixValue, _ := strconv.Atoi(bigPrefixValueStr)
+
+			replacement := bigPrefixValueStr
+			if len(matches[1]) > 0 {
+				v1, _ := strconv.Atoi(matches[1])
+				replacement = `<num>` + strconv.Itoa(v1*bigPrefixValue)
+			}
+
+			text = rx.ReplaceAllString(text, replacement)
+		}
+
+		text = andition(text)
+	}
+
+	text = andition(text)
+	text = strings.Replace(text, `<num>`, "", -1)
 
 	return text, err
 }
 
-func andition(string) {
+// Converts "20 7" or "20 and 7" to "27"
+func andition(text string) string {
+	count := 0
+	for {
+		allMatches := AnditionRx.FindStringSubmatch(text)
 
+		if len(allMatches) != 5 {
+			break
+		}
+
+		v1, err := strconv.Atoi(allMatches[1])
+		if err != nil {
+			break
+		}
+		v2, err := strconv.Atoi(allMatches[3])
+		if err != nil {
+			break
+		}
+
+		if allMatches[1] == "and" || len(allMatches[1]) > len(allMatches[3]) {
+			total := v1 + v2
+			totalStr := strconv.Itoa(total)
+			replacement := `<num>` + totalStr + allMatches[4]
+			replacementCount := 0
+			text = AnditionRx.ReplaceAllStringFunc(text, func(src string) string {
+				if replacementCount == 0 {
+					src = replacement
+				}
+
+				replacementCount += 1
+
+				return src
+			})
+		}
+
+		count += 1
+	}
+
+	return text
 }

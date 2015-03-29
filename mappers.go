@@ -41,12 +41,12 @@ var (
 		"ninety":  "90",
 	}
 
-	BIG_PREFIXES = map[string]string{
-		"hundred":  "100",
-		"thousand": "1000",
-		"million":  "1_000_000",
-		"billion":  "1_000_000_000",
-		"trillion": "1_000_000_000_000",
+	BIG_PREFIXES = [][]string{
+		[]string{"hundred", "100"},
+		[]string{"thousand", "1000"},
+		[]string{"million", "1000000"},
+		[]string{"billion", "1000000000"},
+		[]string{"trillion", "1000000000000"},
 	}
 
 	FRACTIONS = map[string]string{
