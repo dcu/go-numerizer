@@ -15,62 +15,56 @@ func Numerize(text string) (string, error) {
 	text = HyphenatedWordsRx.ReplaceAllString(text, "${1} ${2}")
 	var err error
 
-	for key, value := range DIRECT_NUMS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + key + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+value+`${2}`)
+	for _, pair := range DIRECT_NUMS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + pair.Name + `($|\W)`)
+		text = rx.ReplaceAllString(text, `${1}<num>`+pair.Value+`${2}`)
 	}
 
-	for key, value := range SINGLE_NUMS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + key + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+value+`${2}`)
+	for _, pair := range SINGLE_NUMS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + pair.Name + `($|\W)`)
+		text = rx.ReplaceAllString(text, `${1}<num>`+pair.Value+`${2}`)
 	}
 
-	for tenPrefixName, tenPrefixStr := range TEN_PREFIXES {
-		for singleNumName, singleNumStr := range SINGLE_NUMS {
-			rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixName + singleNumName + `($|\W)`)
+	for _, tenPrefixPair := range TEN_PREFIXES {
+		for _, singleNumPair := range SINGLE_NUMS {
+			rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixPair.Name + singleNumPair.Name + `($|\W)`)
 
-			tenPrefixNum, _ := strconv.Atoi(tenPrefixStr)
-			singleNumNum, _ := strconv.Atoi(singleNumStr)
-
-			num := strconv.Itoa(tenPrefixNum + singleNumNum)
+			num := strconv.Itoa(tenPrefixPair.ValueAsInt() + singleNumPair.ValueAsInt())
 
 			text = rx.ReplaceAllString(text, `${1}<num>`+num+`${2}`)
 		}
 
-		for singleOrdinalName, singleOrdinalStr := range SINGLE_ORDINALS {
-			rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixName + `(\s)?` + singleOrdinalName + `($|\W)`)
+		for _, singleOrdinalPair := range SINGLE_ORDINALS {
+			rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixPair.Name + `(\s)?` + singleOrdinalPair.Name + `($|\W)`)
 
-			tenPrefixNum, _ := strconv.Atoi(tenPrefixStr)
-			singleOrdinalNum, _ := strconv.Atoi(singleOrdinalStr)
-
-			num := strconv.Itoa(tenPrefixNum + singleOrdinalNum)
-			suffix := singleOrdinalName[len(singleOrdinalName)-2:]
+			num := strconv.Itoa(tenPrefixPair.ValueAsInt() + singleOrdinalPair.ValueAsInt())
+			suffix := singleOrdinalPair.Name[len(singleOrdinalPair.Name)-2:]
 
 			text = rx.ReplaceAllString(text, `${1}<num>`+num+suffix+`${3}`)
 		}
 
-		rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixName + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+tenPrefixStr+`${2}`)
+		rx := regexp.MustCompile(`(?i)(^|\W)` + tenPrefixPair.Name + `($|\W)`)
+		text = rx.ReplaceAllString(text, `${1}<num>`+tenPrefixPair.Value+`${2}`)
 	}
 
-	for fractionName, fractionValueStr := range FRACTIONS {
-		rx := regexp.MustCompile(`(?i)a ` + fractionName + `(|\W)`)
-		text = rx.ReplaceAllString(text, `<num>1/`+fractionValueStr+`${2}`)
+	for _, fractionPair := range FRACTIONS {
+		rx := regexp.MustCompile(`(?i)a ` + fractionPair.Name + `(|\W)`)
+		text = rx.ReplaceAllString(text, `<num>1/`+fractionPair.Value+`${2}`)
 
-		rx = regexp.MustCompile(`(?i)\s` + fractionName + `($|\W)`)
-		text = rx.ReplaceAllString(text, `/`+fractionValueStr+`${2}`)
+		rx = regexp.MustCompile(`(?i)\s` + fractionPair.Name + `($|\W)`)
+		text = rx.ReplaceAllString(text, `/`+fractionPair.Value+`${2}`)
 	}
 
-	for directOrdinalName, directOrdinalStr := range DIRECT_ORDINALS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + directOrdinalName + `($|\W)`)
-		suffix := directOrdinalName[len(directOrdinalName)-2:]
-		text = rx.ReplaceAllString(text, `${1}<num>`+directOrdinalStr+suffix+`${2}`)
+	for _, directOrdinalPair := range DIRECT_ORDINALS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + directOrdinalPair.Name + `($|\W)`)
+		suffix := directOrdinalPair.Name[len(directOrdinalPair.Name)-2:]
+		text = rx.ReplaceAllString(text, `${1}<num>`+directOrdinalPair.Value+suffix+`${2}`)
 	}
 
-	for singleOrdinalName, singleOrdinalStr := range SINGLE_ORDINALS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + singleOrdinalName + `($|\W)`)
-		suffix := singleOrdinalName[len(singleOrdinalName)-2:]
-		text = rx.ReplaceAllString(text, `${1}<num>`+singleOrdinalStr+suffix+`${2}`)
+	for _, singleOrdinalPair := range SINGLE_ORDINALS {
+		rx := regexp.MustCompile(`(?i)(^|\W)` + singleOrdinalPair.Name + `($|\W)`)
+		suffix := singleOrdinalPair.Name[len(singleOrdinalPair.Name)-2:]
+		text = rx.ReplaceAllString(text, `${1}<num>`+singleOrdinalPair.Value+suffix+`${2}`)
 	}
 
 	// evaluate fractions when preceded by another number
@@ -90,18 +84,14 @@ func Numerize(text string) (string, error) {
 
 	// hundreds, thousands, millions, etc.
 	for _, pair := range BIG_PREFIXES {
-		bigPrefixName := pair[0]
-		bigPrefixValueStr := pair[1]
-		rx := regexp.MustCompile(`(?i)(?:<num>)?(\d*) *` + bigPrefixName)
+		rx := regexp.MustCompile(`(?i)(?:<num>)?(\d*) *` + pair.Name)
 		matches := rx.FindStringSubmatch(text)
 
 		if len(matches) == 2 {
-			bigPrefixValue, _ := strconv.Atoi(bigPrefixValueStr)
-
-			replacement := bigPrefixValueStr
+			replacement := pair.Value
 			if len(matches[1]) > 0 {
 				v1, _ := strconv.Atoi(matches[1])
-				replacement = `<num>` + strconv.Itoa(v1*bigPrefixValue)
+				replacement = `<num>` + strconv.Itoa(v1*pair.ValueAsInt())
 			}
 
 			text = rx.ReplaceAllString(text, replacement)
