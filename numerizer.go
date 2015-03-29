@@ -1,19 +1,11 @@
 package numerizer
 
 import (
-	"regexp"
 	"strings"
 )
 
-var (
-	HyphenatedWordsRx = regexp.MustCompile(` +|([^\d])-([^\d])`)
-	AnditionRx        = regexp.MustCompile(`(?i)<num>(\d+)( | and )<num>(\d+)([^\w]|$)`)
-)
-
-func Numerize(text string) (string, error) {
-	text = HyphenatedWordsRx.ReplaceAllString(text, "${1} ${2}")
-	var err error
-
+func Numerize(text string) string {
+	text = normalizeInput(text)
 	text = replaceDirectNumbers(text)
 	text = replaceSingleNumbers(text)
 	text = replaceTenPrefixes(text)
@@ -26,5 +18,5 @@ func Numerize(text string) (string, error) {
 	text = andition(text)
 	text = strings.Replace(text, `<num>`, "", -1)
 
-	return text, err
+	return text
 }

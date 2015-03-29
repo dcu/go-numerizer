@@ -49,11 +49,7 @@ var (
 )
 
 func Test_CombinedDoubleDigits(t *testing.T) {
-	number, err := Numerize("thirtyseven")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("thirtyseven")
 
 	if number != "37" {
 		t.Error("Number not parsed")
@@ -74,11 +70,7 @@ func Test_CombinedDoubleDigits(t *testing.T) {
 //}
 
 func Test_DirectNums(t *testing.T) {
-	number, err := Numerize("eleven")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("eleven")
 
 	if number != "11" {
 		t.Error("Number not parsed")
@@ -86,11 +78,7 @@ func Test_DirectNums(t *testing.T) {
 }
 
 func Test_TenPrefix(t *testing.T) {
-	number, err := Numerize("thirty")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("thirty")
 
 	if number != "30" {
 		t.Error("Number not parsed")
@@ -98,11 +86,7 @@ func Test_TenPrefix(t *testing.T) {
 }
 
 func Test_Fraction_1(t *testing.T) {
-	number, err := Numerize("a fifth")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("a fifth")
 
 	if number != "1/5" {
 		t.Error("Number not parsed")
@@ -110,11 +94,7 @@ func Test_Fraction_1(t *testing.T) {
 }
 
 func Test_Fractions_2(t *testing.T) {
-	number, err := Numerize("two fifths")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("two fifths")
 
 	if number != "2/5" {
 		t.Error("Number not parsed")
@@ -122,11 +102,7 @@ func Test_Fractions_2(t *testing.T) {
 }
 
 func Test_DirectOrdinal(t *testing.T) {
-	number, err := Numerize("ninth")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("ninth")
 
 	if number != "9th" {
 		t.Error("Number not parsed")
@@ -134,11 +110,7 @@ func Test_DirectOrdinal(t *testing.T) {
 }
 
 func Test_SingleOrdinal(t *testing.T) {
-	number, err := Numerize("third")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("third")
 
 	if number != "3rd" {
 		t.Error("Number not parsed")
@@ -146,11 +118,7 @@ func Test_SingleOrdinal(t *testing.T) {
 }
 
 func Test_CleanFraction(t *testing.T) {
-	number, err := Numerize("one and two fifths")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("one and two fifths")
 
 	if number != "1.40" {
 		t.Error("Number not parsed")
@@ -158,11 +126,7 @@ func Test_CleanFraction(t *testing.T) {
 }
 
 func Test_BigPrefix(t *testing.T) {
-	number, err := Numerize("two trillion")
-
-	if err != nil {
-		t.Error("Number not parsed, error: " + err.Error())
-	}
+	number := Numerize("two trillion")
 
 	if number != "2000000000000" {
 		t.Error("Number not parsed")
@@ -171,7 +135,7 @@ func Test_BigPrefix(t *testing.T) {
 
 func Test_All(t *testing.T) {
 	for text, numberStr := range Examples {
-		result, _ := Numerize(text)
+		result := Numerize(text)
 
 		if result != numberStr {
 			t.Errorf("Failed test. %s:  %s != %s", text, numberStr, result)

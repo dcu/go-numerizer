@@ -35,9 +35,9 @@ func evaluateFractions(text string) string {
 	rx := regexp.MustCompile(`(?i)(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)`)
 	matches := rx.FindStringSubmatch(text)
 	if len(matches) == 5 {
-		v1, _ := strconv.ParseFloat(matches[1], 64)
-		v3, _ := strconv.ParseFloat(matches[3], 64)
-		v4, _ := strconv.ParseFloat(matches[4], 64)
+		v1 := stringToFloat(matches[1])
+		v3 := stringToFloat(matches[3])
+		v4 := stringToFloat(matches[4])
 
 		sum := v1 + (v3 / v4)
 

@@ -24,7 +24,7 @@ func replaceBigPrefixes(text string) string {
 		if len(matches) == 2 {
 			replacement := pair.Value
 			if len(matches[1]) > 0 {
-				v1, _ := strconv.Atoi(matches[1])
+				v1 := stringToInt(matches[1])
 				replacement = `<num>` + strconv.Itoa(v1*pair.ValueAsInt())
 			}
 
