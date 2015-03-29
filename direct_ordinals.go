@@ -5,33 +5,55 @@ import (
 )
 
 var (
-	DIRECT_ORDINALS = NameValuePairs{
-		&NameValuePair{"tenth", "10"},
-		&NameValuePair{"eleventh", "11"},
-		&NameValuePair{"twelfth", "12"},
-		&NameValuePair{"thirteenth", "13"},
-		&NameValuePair{"fourteenth", "14"},
-		&NameValuePair{"fifteenth", "15"},
-		&NameValuePair{"sixteenth", "16"},
-		&NameValuePair{"seventeenth", "17"},
-		&NameValuePair{"eighteenth", "18"},
-		&NameValuePair{"nineteenth", "19"},
-		&NameValuePair{"twentieth", "20"},
-		&NameValuePair{"thirtieth", "30"},
-		&NameValuePair{"fourtieth", "40"},
-		&NameValuePair{"fiftieth", "50"},
-		&NameValuePair{"sixtieth", "60"},
-		&NameValuePair{"seventieth", "70"},
-		&NameValuePair{"eightieth", "80"},
-		&NameValuePair{"ninetieth", "90"},
+	DIRECT_ORDINALS = directOrdinals{
+		newDirectOrdinal("tenth", "10"),
+		newDirectOrdinal("eleventh", "11"),
+		newDirectOrdinal("twelfth", "12"),
+		newDirectOrdinal("thirteenth", "13"),
+		newDirectOrdinal("fourteenth", "14"),
+		newDirectOrdinal("fifteenth", "15"),
+		newDirectOrdinal("sixteenth", "16"),
+		newDirectOrdinal("seventeenth", "17"),
+		newDirectOrdinal("eighteenth", "18"),
+		newDirectOrdinal("nineteenth", "19"),
+		newDirectOrdinal("twentieth", "20"),
+		newDirectOrdinal("thirtieth", "30"),
+		newDirectOrdinal("fourtieth", "40"),
+		newDirectOrdinal("fiftieth", "50"),
+		newDirectOrdinal("sixtieth", "60"),
+		newDirectOrdinal("seventieth", "70"),
+		newDirectOrdinal("eightieth", "80"),
+		newDirectOrdinal("ninetieth", "90"),
 	}
 )
 
+type directOrdinal struct {
+	name        string
+	value       string
+	suffix      string
+	rx          *regexp.Regexp
+	replacement string
+}
+type directOrdinals []directOrdinal
+
+func newDirectOrdinal(name string, value string) directOrdinal {
+	pair := directOrdinal{name: name, value: value}
+	pair.rx = regexp.MustCompile(`(?i)(^|\W)` + name + `($|\W)`)
+	pair.suffix = name[len(name)-2:]
+	pair.replacement = `${1}<num>` + pair.value + pair.suffix + `${2}`
+
+	return pair
+}
+
+func (pair directOrdinal) apply(text string) string {
+	text = pair.rx.ReplaceAllString(text, pair.replacement)
+
+	return text
+}
+
 func replaceDirectOrdinals(text string) string {
 	for _, directOrdinalPair := range DIRECT_ORDINALS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + directOrdinalPair.Name + `($|\W)`)
-		suffix := directOrdinalPair.Name[len(directOrdinalPair.Name)-2:]
-		text = rx.ReplaceAllString(text, `${1}<num>`+directOrdinalPair.Value+suffix+`${2}`)
+		text = directOrdinalPair.apply(text)
 	}
 
 	return text

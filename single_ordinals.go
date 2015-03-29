@@ -5,23 +5,43 @@ import (
 )
 
 var (
-	SINGLE_ORDINALS = NameValuePairs{
-		&NameValuePair{"first", "1"},
-		&NameValuePair{"third", "3"},
-		&NameValuePair{"fourth", "4"},
-		&NameValuePair{"fifth", "5"},
-		&NameValuePair{"sixth", "6"},
-		&NameValuePair{"seventh", "7"},
-		&NameValuePair{"eighth", "8"},
-		&NameValuePair{"ninth", "9"},
+	SINGLE_ORDINALS = singleOrdinals{
+		newSingleOrdinal("first", "1"),
+		newSingleOrdinal("third", "3"),
+		newSingleOrdinal("fourth", "4"),
+		newSingleOrdinal("fifth", "5"),
+		newSingleOrdinal("sixth", "6"),
+		newSingleOrdinal("seventh", "7"),
+		newSingleOrdinal("eighth", "8"),
+		newSingleOrdinal("ninth", "9"),
 	}
 )
 
+type singleOrdinal struct {
+	name        string
+	value       string
+	suffix      string
+	rx          *regexp.Regexp
+	replacement string
+}
+type singleOrdinals []*singleOrdinal
+
+func newSingleOrdinal(name string, value string) *singleOrdinal {
+	pair := &singleOrdinal{name: name, value: value}
+	pair.rx = regexp.MustCompile(`(?i)(^|\W)` + name + `($|\W)`)
+	pair.suffix = name[len(name)-2:]
+	pair.replacement = `${1}<num>` + value + pair.suffix + `${2}`
+
+	return pair
+}
+
+func (pair *singleOrdinal) apply(text string) string {
+	return pair.rx.ReplaceAllString(text, pair.replacement)
+}
+
 func replaceSingleOrdinals(text string) string {
 	for _, singleOrdinalPair := range SINGLE_ORDINALS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + singleOrdinalPair.Name + `($|\W)`)
-		suffix := singleOrdinalPair.Name[len(singleOrdinalPair.Name)-2:]
-		text = rx.ReplaceAllString(text, `${1}<num>`+singleOrdinalPair.Value+suffix+`${2}`)
+		text = singleOrdinalPair.apply(text)
 	}
 
 	return text

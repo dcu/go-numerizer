@@ -5,27 +5,48 @@ import (
 )
 
 var (
-	DIRECT_NUMS = NameValuePairs{
-		&NameValuePair{"eleven", "11"},
-		&NameValuePair{"twelve", "12"},
-		&NameValuePair{"thirteen", "13"},
-		&NameValuePair{"fourteen", "14"},
-		&NameValuePair{"fifteen", "15"},
-		&NameValuePair{"sixteen", "16"},
-		&NameValuePair{"seventeen", "17"},
-		&NameValuePair{"eighteen", "18"},
-		&NameValuePair{"nineteen", "19"},
-		&NameValuePair{"ninteen", "19"}, // Common mis-spelling
-		&NameValuePair{"zero", "0"},
-		&NameValuePair{"ten", "10"},
-		&NameValuePair{"\ba[\b^$]", "1"}, // doesn't make sense for an 'a' at the end to be a 1
+	DIRECT_NUMS = directNumbers{
+		newDirectNumber("eleven", "11"),
+		newDirectNumber("twelve", "12"),
+		newDirectNumber("thirteen", "13"),
+		newDirectNumber("fourteen", "14"),
+		newDirectNumber("fifteen", "15"),
+		newDirectNumber("sixteen", "16"),
+		newDirectNumber("seventeen", "17"),
+		newDirectNumber("eighteen", "18"),
+		newDirectNumber("nineteen", "19"),
+		newDirectNumber("ninteen", "19"), // Common mis-spelling
+		newDirectNumber("zero", "0"),
+		newDirectNumber("ten", "10"),
+		newDirectNumber("\ba[\b^$]", "1"), // doesn't make sense for an 'a' at the end to be a 1
 	}
 )
 
+type directNumber struct {
+	Name        string
+	Value       string
+	rx          *regexp.Regexp
+	replacement string
+}
+
+type directNumbers []*directNumber
+
+func newDirectNumber(name string, value string) *directNumber {
+	pair := &directNumber{Name: name, Value: value}
+
+	pair.rx = regexp.MustCompile(`(?i)(^|\W)` + name + `($|\W)`)
+	pair.replacement = `${1}<num>` + pair.Value + `${2}`
+
+	return pair
+}
+
+func (pair *directNumber) apply(text string) string {
+	return pair.rx.ReplaceAllString(text, pair.replacement)
+}
+
 func replaceDirectNumbers(text string) string {
 	for _, pair := range DIRECT_NUMS {
-		rx := regexp.MustCompile(`(?i)(^|\W)` + pair.Name + `($|\W)`)
-		text = rx.ReplaceAllString(text, `${1}<num>`+pair.Value+`${2}`)
+		text = pair.apply(text)
 	}
 
 	return text
